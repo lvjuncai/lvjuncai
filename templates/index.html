@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+<script src="{{ url_for('static',filename='js/index.js') }}"></script>
+<head>
+{% block title %}
+首页
+{% endblock %}
+</head>
+{% block main %}
+<h1>这里是首页哟~</h1>
+    <p>欢迎{{ username }}</p>
+    <img src="{{ url_for('static',filename='images/早上好.png')}}"alt="">
+{% endblock %}
