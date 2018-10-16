@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}
+注册
+{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for("static",filename="css/login1.css") }}">
+{% endblock %}
+{% block main %}
+    <h3 class="page-title">注册信息</h3>
+<from action="" method="POST">
+    <div class="form-container">
+  <div class="form-group">
+    <input type="text" class="form-control"  placeholder="请输入您的账号" name="username">
+  </div>
+  <div class="form-group">
+    <input type="password" class="form-control"  placeholder="请输入您的密码" name="password1">
+  </div>
+  <div class="form-group">
+    <input type="password" class="form-control" placeholder="请确认您的密码" name="password2">
+  </div>
+        <div class = "form-group">
+  <button type="submit" class="btn btn-primary btn-block">注册</button>
+        </div>
+        </div>
+</from>
+{% endblock %}
