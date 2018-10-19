@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+五月论坛
+{% endblock %}
+{% block head %}
+ <link rel="stylesheet" href="{{ url_for('static',filename='css/forum.css')}}">
+{% endblock %}
+{% block main %}
+<ul>
+{% for reporter in reporters %}
+     <li>
+    <div class="avatar-group">
+       <!--<img src="{{ url_for('static',filename='images/头像.png') }}" alt=""class="avatar">-->
+    </div>
+    <div class="question-group">
+        <p class="question-title">
+            <a href="{{ url_for('detail',reporter_id=reporter.id) }}">{{ reporter.title }}</a>
+        </p>
+        <p class="content-content">
+           {{ reporter.content }}
+        </p>
+        <div class="question-info">
+            <span class="question-author">{{ reporter.author.username }}</span>
+            <span class="question-time">{{ reporter.create_time }}</span>
+        </div>
+    </div>
+   </li>
+    {% endfor %}
+</ul>
+{% endblock %}

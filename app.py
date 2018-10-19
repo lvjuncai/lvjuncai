@@ -1,35 +1,21 @@
 from flask import Flask
-from flask import Flask, render_template,redirect,url_for
+from flask import Flask, render_template,redirect,url_for,session
 from flask_bootstrap3 import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask import request
-from models import User
+from models import User,Reporter,db
 from exts import db
 import pymysql
 import config
 pymysql.install_as_MySQLdb()
-
+from decorations import login_lim
 
 app = Flask(__name__)
 db=SQLAlchemy(app)
 bootstrap=Bootstrap(app)
 app.config.from_object(config)
 db.init_app(app)
-"""
-class User(db.Model):
-    __tablename__="user"
-    id =db.Column(db.Integer,primary_key=True,autoincrement=True)
-    username=db.Column(db.String(50),nullable=False)
-    author_id =db.Column(db.Integer,db.ForeignKey("user.id"))
-    password=db.Column(db.String(100),nullable=False)
-class Message(db.Model):
-    __tablename__ = "Message"
-    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
-    title= db.Column(db.String(100),nullable=False)
-    content =db.Column(db.Text,nullable=False)
-   
-db.create_all()
-"""
+
 @app.route('/')
 def index():
     context={
@@ -44,7 +30,22 @@ def Login():
     if request.method == "GET":
         return render_template("login.html")
     else:
-        pass
+        username=request.form.get("username")
+        password=request.form.get("password")
+        user=User.query.filter(User.username==username,User.password==password).first()
+        if user:
+            session['user_id']=user.id
+            session.permanent= True
+            return redirect(url_for("index"))
+        else:
+            return u"账号或密码错误！"
+
+@app.route('/logout/')
+def logout():
+    #session.pop('user_id')
+    #del session["user_id"]
+    session.clear()
+    return redirect(url_for("Login"))
 @app.route('/register/',methods=['GET','POST'])
 def register():
     if request.method == "GET":
@@ -64,16 +65,45 @@ def register():
                 db.session.add(own_user)
                 db.session.commit()
                 return redirect(url_for("Login"))
+@app.route("/reporter/",methods=["GET","POST"])
+@login_lim
+def reporter():
+    from models import db as thisdb
+    if request.method=="GET":
+        return render_template("reporter.html")
+    else:
+        title =request.form.get('title')
+        content=request.form.get('content')
+        reporter = Reporter(title=title,content=content)
+        user_id=session.get('user_id')
+        user=User.query.filter(User.id==user_id).first()
+        reporter.author=user
+        thisdb.session.add(reporter)
+        thisdb.session.commit()
+        return redirect(url_for('forum'))
+@app.route('/detail/<reporter_id>')
+def detail(reporter_id):
+    reporter_model=Reporter.query.filter(Reporter.id==reporter_id).first()
+    return render_template('detail.html',reporter=reporter_model)
 
-"""def insert_db():
-    article1=Message(title='aaa',content='bbb')
-    db.session.add(article1)
-    db.session.commit()
-def findout_db():
-    article11 =Message.query.filter(Message.title=="aaa").first()
-    print('name:%s'%article11.title)
-    print('content:%s'%article11.content)
-"""
+@app.route('/comment/',methods=['POST'])
+def add_comment():
+    content=request.form.get('comment')
+@app.route('/forum/')
+def forum():
+    context={
+        'reporters':Reporter.query.order_by('-create_time').all()
+    }
+    return render_template('forum.html',**context)
+
+@app.context_processor
+def my_context_processor():
+    user_id=session.get('user_id')
+    if user_id:
+        user=User.query.filter(User.id ==user_id).first()
+        if user:
+            return {'user':user}
+    return {}
 
 
 
